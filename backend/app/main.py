@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, SessionLocal, engine
 from app.models import Cancha, Reservacion
@@ -85,28 +85,31 @@ async def create_reservacion(reservacion: ReservacionSchema, db: Session = Depen
     db_cancha = db.query(Cancha).filter(Cancha.id == reservacion.cancha_id).first()
     if db_cancha is None:
         raise HTTPException(status_code=404, detail="La cancha con el id proporcionado no existe")
-    
-    fecha = reservacion.fecha
-    hora_inicio = reservacion.hora_inicio
-    
-    # Compara si ya existe una reservación en ese tiempo
-    existing_reservation = db.query(Reservacion).filter(
-        Reservacion.fecha == fecha,
-        Reservacion.hora_inicio == hora_inicio
-    ).first()
 
-    if existing_reservation:
-        raise HTTPException(status_code=400, detail="La reservación ya existe en ese horario")
-    # Convertir la fecha y hora a objetos datetime.date y datetime.time
-    try:
-        fecha_obj = datetime.strptime(reservacion.fecha, "%Y-%m-%d").date()
-        hora_inicio_obj = datetime.strptime(str(reservacion.hora_inicio), "%H:%M").time()
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Formato de fecha o hora inválido")
-    # Agrega la nueva reservación
+    # Calcula el rango de tiempo de la nueva reserva
+    hora_inicio_nueva = datetime.combine(reservacion.fecha, reservacion.hora_inicio)
+    hora_fin_nueva = hora_inicio_nueva + timedelta(minutes=reservacion.duracion)
+
+    # Recupera todas las reservas relevantes (día actual y día anterior)
+    reservas_posibles = db.query(Reservacion).filter(
+        Reservacion.cancha_id == reservacion.cancha_id,
+        Reservacion.fecha >= reservacion.fecha - timedelta(days=1),  # Incluye el día anterior
+        Reservacion.fecha <= reservacion.fecha  # Incluye el día actual
+    ).all()
+
+    # Verifica traslapes con las reservas existentes
+    for reserva in reservas_posibles:
+        hora_inicio_existente = datetime.combine(reserva.fecha, reserva.hora_inicio)
+        hora_fin_existente = hora_inicio_existente + timedelta(minutes=reserva.duracion)
+
+        # Comprobación de traslapes
+        if not (hora_fin_nueva <= hora_inicio_existente or hora_inicio_nueva >= hora_fin_existente):
+            raise HTTPException(status_code=400, detail="La cancha ya está ocupada en ese horario")
+
+    # Crea la nueva reservación
     new_reservation = Reservacion(
-        fecha=fecha,  # Guardamos el objeto date
-        hora_inicio=hora_inicio,  # Guardamos el objeto time
+        fecha=reservacion.fecha,
+        hora_inicio=reservacion.hora_inicio,
         cancha_id=reservacion.cancha_id,
         nombre_contacto=reservacion.nombre_contacto,
         telefono_contacto=reservacion.telefono_contacto,
@@ -117,6 +120,8 @@ async def create_reservacion(reservacion: ReservacionSchema, db: Session = Depen
     db.refresh(new_reservation)
 
     return new_reservation
+
+
 
 # Endpoint para obtener todas las reservaciones
 @app.get("/reservaciones/", response_model=list[ReservacionConId])

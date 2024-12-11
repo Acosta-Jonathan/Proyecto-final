@@ -1,5 +1,5 @@
 from datetime import date, datetime, time
-from pydantic import BaseModel, field_validator, validator
+from pydantic import BaseModel, root_validator, ValidationError
 
 class ReservacionBase(BaseModel):
     cancha_id: int
