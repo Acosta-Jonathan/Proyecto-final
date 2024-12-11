@@ -1,0 +1,6 @@
+pip==24.2
+psycopg2-binary==2.9.10
+setuptools==74.0.0
+SQLAlchemy==2.0.36
+typing_extensions==4.12.2
+wheel==0.44.0
