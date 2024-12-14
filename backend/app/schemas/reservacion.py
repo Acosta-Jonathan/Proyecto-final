@@ -1,10 +1,9 @@
-from datetime import date, datetime, time
-from pydantic import BaseModel, root_validator, ValidationError
+from pydantic import BaseModel
 
 class ReservacionBase(BaseModel):
     cancha_id: int
-    fecha: date
-    hora_inicio: time
+    fecha: str
+    hora_inicio: str
     duracion: int
     nombre_contacto: str
     telefono_contacto: str
