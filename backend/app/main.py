@@ -192,7 +192,7 @@ def update_reservacion(reservacion_id: int, reservacion: ReservacionSchema, db: 
             Reservacion.fecha == fecha_obj + timedelta(days=1),  # Día siguiente
         )
     ).all()
-    print(reservas_existentes)
+    
     # Comprobar superposición con las reservas existentes
     for existente in reservas_existentes:
         existente_inicio = datetime.combine(existente.fecha, existente.hora_inicio)

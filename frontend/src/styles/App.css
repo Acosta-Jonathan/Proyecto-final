@@ -1,0 +1,33 @@
+/* Estilo para listas */
+.list-item-hover {
+    transition: background-color 0.3s ease;
+  }
+  
+  .list-item-hover:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Animación de botones */
+  .btn-animated {
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    color: black;
+  }
+  
+  .btn-animated:hover {
+    transform: scale(1.1);
+    color: #fff;
+  }
+  
+  /* Fondo personalizado */
+  header {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+  }
+  
+  /* Texto animado */
+  .animate__animated {
+    animation-duration: 1.5s;
+  }
+  
+  body{background-color: rgb(164, 161, 161);}
+  .container{background-color: #6610f2;
+  margin-top: auto;}
