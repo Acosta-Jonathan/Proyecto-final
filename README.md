@@ -1,4 +1,5 @@
-//Correr el entorno virtual
+//Crear y correr el entorno virtual
+python -m venv venv
 venv\Scripts\activate
 
 //Instalar dependencias
@@ -11,3 +12,4 @@ npm start
 
 //Para ejecutar backend
 cd .\backend\
+uvicorn app.main:app --reload
