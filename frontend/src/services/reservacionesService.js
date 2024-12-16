@@ -3,6 +3,22 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000';
 
 export const reservacionesService = {
+
+  obtenerReservasPorCancha: async (canchaId) => {
+    try {
+      const response = await axios.get(`${API_URL}/reservas?cancha_id=${canchaId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error al obtener reservas por cancha:", error);
+      throw error;
+    }
+  },
+
+  obtenerReservaPorId: async (id) => {
+      const response = await fetch(`http://localhost:8000/reservaciones/${id}`);
+      return await response.json();
+  },
+  
   async obtenerReservaciones() {
     try {
       const respuesta = await axios.get(`${API_URL}/reservaciones/`);

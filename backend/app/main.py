@@ -40,6 +40,15 @@ def create_cancha(cancha: CanchaSchema, db: Session = Depends(get_db)):
     db.refresh(db_cancha)
     return db_cancha
 
+# Endpoint para obtener todas las reservas de la cancha seleccionada
+@app.get("/canchas/{cancha_id}/reservas", response_model=list[ReservacionSchema])
+def get_reservas_por_cancha(cancha_id: int, db: Session = Depends(get_db)):
+    reservas = db.query(Reservacion).filter(
+        Reservacion.cancha_id == cancha_id
+    ).order_by(Reservacion.fecha, Reservacion.hora_inicio).all()
+
+    return reservas
+
 # Endpoint para obtener todas las canchas
 @app.get("/canchas/", response_model=list[CanchaConId])
 def get_canchas(db: Session = Depends(get_db)):
@@ -168,6 +177,9 @@ def get_reservacion(reservacion_id: int, db: Session = Depends(get_db)):
 @app.put("/reservaciones/{reservacion_id}", response_model=ReservacionConId)
 def update_reservacion(reservacion_id: int, reservacion: ReservacionSchema, db: Session = Depends(get_db)):
     db_reservacion = db.query(Reservacion).filter(Reservacion.id == reservacion_id).first()
+    if not db_reservacion:
+        raise HTTPException(status_code=404, detail="Reservación no encontrada")
+
     # Convertir fecha y hora a objetos datetime
     try:
         fecha_obj = datetime.strptime(reservacion.fecha, "%Y-%m-%d").date()
