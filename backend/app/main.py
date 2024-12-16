@@ -80,7 +80,7 @@ def delete_cancha(cancha_id: int, db: Session = Depends(get_db)):
 # -------------------- ENDPOINTS DE RESERVACIONES --------------------
 
 # Endpoint para crear una nueva reservación
-@app.post("/reservaciones/", response_model=ReservacionConId)
+@app.post("/reservaciones/")
 def create_reservacion(reservacion: ReservacionSchema, db: Session = Depends(get_db)):
     # Convertir fecha y hora a objetos datetime
     try:
@@ -131,7 +131,6 @@ def create_reservacion(reservacion: ReservacionSchema, db: Session = Depends(get
     db.add(nueva_reserva)
     db.commit()
     db.refresh(nueva_reserva)
-    return nueva_reserva
 
 
 
