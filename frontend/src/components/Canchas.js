@@ -60,7 +60,7 @@ function Canchas() {
         setReservasFiltradas(reservas);
         setMostrarResultadosBusqueda(true);
       } catch (error) {
-        console.error("Error al buscar reservas:", error);
+        setReservasFiltradas([]);
       }
     }
   };

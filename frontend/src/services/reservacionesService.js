@@ -10,8 +10,7 @@ export const reservacionesService = {
       });
       return response.data;
     } catch (error) {
-      console.error("Error al consultar las reservas por cancha y fecha:", error);
-      throw error;
+      return [];
     }
   },
   
