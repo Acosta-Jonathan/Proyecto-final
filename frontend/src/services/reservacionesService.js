@@ -18,9 +18,12 @@ export const reservacionesService = {
   obtenerReservasPorCancha: async (canchaId) => {
     try {
       const response = await axios.get(`${API_URL}/canchas/${canchaId}/reservas`);
-      return response.data;
+      return response.data.map(reserva => ({
+        ...reserva,
+        telefono_contacto: `${reserva.telefono_area}-${reserva.telefono_numero}`
+      }));
     } catch (error) {
-      console.error("Error al obtener reservas por cancha:", error);
+      console.error('Error al obtener reservas:', error);
       throw error;
     }
   },

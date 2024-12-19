@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Button, Card } from 'react-bootstrap';
-import { canchasService } from '../services/canchasService';
-import { reservacionesService } from '../services/reservacionesService';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Form, Button, Card } from "react-bootstrap";
+import { canchasService } from "../services/canchasService";
+import { reservacionesService } from "../services/reservacionesService";
 
 function CrearReservacion() {
   const { canchaId } = useParams(); // Obtiene el ID de la cancha desde la URL
-  const [canchaNombre, setCanchaNombre] = useState(''); // Guarda el nombre de la cancha
+  const [canchaNombre, setCanchaNombre] = useState(""); // Guarda el nombre de la cancha
   const [reserva, setReserva] = useState({
-    fecha: '',
-    hora_inicio: '',
-    duracion: '',
-    nombre_contacto: '',
-    telefono_contacto: ''
+    fecha: "",
+    hora_inicio: "",
+    duracion: 15,
+    nombre_contacto: "",
+    telefono_area: "",
+    telefono_numero: "",
   });
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -24,7 +25,7 @@ function CrearReservacion() {
         const cancha = await canchasService.obtenerCanchaPorId(canchaId);
         setCanchaNombre(cancha.nombre);
       } catch (error) {
-        console.error('Error al cargar la cancha:', error);
+        console.error("Error al cargar la cancha:", error);
       }
     };
     cargarCancha();
@@ -32,7 +33,10 @@ function CrearReservacion() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setReserva({ ...reserva, [name]: value });
+    setReserva(prev => ({
+      ...prev,
+      [name]: name === 'duracion' ? parseInt(value) || 0 : value
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -41,16 +45,20 @@ function CrearReservacion() {
       setError(""); // Limpiar error previo
       await reservacionesService.crearReservacion({
         ...reserva,
-        cancha_id: parseInt(canchaId)
+        cancha_id: parseInt(canchaId),
+        duracion: parseInt(reserva.duracion)
       });
-      navigate('/');
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <div className="container mt-5">
+    <div
+      className="container blurred-container mt-5"
+      style={{ maxWidth: "600px" }}
+    >
       <Card>
         <Card.Header>
           <h5>Crear Reservación - Cancha: {canchaNombre}</h5>
@@ -108,17 +116,32 @@ function CrearReservacion() {
               />
             </Form.Group>
 
-            <Form.Group controlId="telefono_contacto" className="mt-3">
+            <Form.Group className="mt-3">
               <Form.Label>Teléfono de Contacto</Form.Label>
-              <Form.Control
-                type="number"
-                name="telefono_contacto"
-                value={reserva.telefono_contacto}
-                onChange={handleChange}
-                min="1000000000"
-                max="9999999999999999"
-                required
-              />
+              <div className="d-flex align-items-center">
+                <Form.Control
+                  type="number"
+                  name="telefono_area"
+                  placeholder="Cód área"
+                  value={reserva.telefono_area}
+                  onChange={handleChange}
+                  min="100"
+                  max="9999"
+                  style={{ width: "120px" }}
+                  required
+                />
+                <span className="mx-2 fw-bold">-</span>
+                <Form.Control
+                  type="number"
+                  name="telefono_numero"
+                  placeholder="Número"
+                  value={reserva.telefono_numero}
+                  onChange={handleChange}
+                  min="100000"
+                  max="99999999"
+                  required
+                />
+              </div>
             </Form.Group>
 
             <Button variant="primary" type="submit" className="mt-4">

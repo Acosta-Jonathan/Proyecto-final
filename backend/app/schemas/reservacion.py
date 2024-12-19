@@ -6,7 +6,8 @@ class ReservacionBase(BaseModel):
     hora_inicio: str
     duracion: int
     nombre_contacto: str
-    telefono_contacto: str
+    telefono_area: str
+    telefono_numero: str
 
 class ReservacionCreate(ReservacionBase):
     pass

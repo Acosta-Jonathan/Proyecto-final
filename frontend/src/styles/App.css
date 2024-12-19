@@ -48,15 +48,71 @@
     animation-duration: 1.5s;
   }
   
-  body{
+  body {
     width: 100%;
     height: 100vh;
-    background-image: url('../assets/paddel-club.jpeg');
-    background-size:cover;
-    background-position:center;
+    background-image: url("../assets/paddel-club2.jpg");
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
     color: white;
+    font-weight: 500;
+  }
+  
+  /* Estilos de las cards */
+  .card {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .card-title {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+  }
+  
+  .list-group-item {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+  
+   .form-label {
+    color: rgb(0, 0, 0);
+    text-shadow: 2px 2px 4px rgba(144, 255, 54, 0.8);
+    font-weight: 500;
+  }
+  
+  /* Estilos para los controles de formulario */
+  .form-select, .form-control {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Nuevo contenedor con blur */
+  .blurred-container {
+    margin: 20px 40px;
+    padding: 20px;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .blurred-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 0;
+    border-radius: 15px;
+  }
+  
+  /* Asegurar que el contenido esté por encima del blur */
+  .blurred-container > * {
+    position: relative;
+    z-index: 1;
   }
 
   .full-width-container {

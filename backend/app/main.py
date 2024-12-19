@@ -55,7 +55,8 @@ def get_reservas_por_cancha(cancha_id: int, db: Session = Depends(get_db)):
             "hora_inicio": r.hora_inicio.strftime("%H:%M"),  # Convertir hora_inicio al formato "HH:MM"
             "duracion": r.duracion,
             "nombre_contacto": r.nombre_contacto,
-            "telefono_contacto": r.telefono_contacto,
+            "telefono_area": r.telefono_area,
+            "telefono_numero": r.telefono_numero
         }
         for r in reservas
     ]
@@ -147,7 +148,8 @@ def create_reservacion(reservacion: ReservacionSchema, db: Session = Depends(get
         hora_inicio=hora_inicio_obj,
         duracion=reservacion.duracion,
         nombre_contacto=reservacion.nombre_contacto,
-        telefono_contacto=reservacion.telefono_contacto,
+        telefono_area=reservacion.telefono_area,
+        telefono_numero=reservacion.telefono_numero
     )
     db.add(nueva_reserva)
     db.commit()
@@ -170,7 +172,8 @@ def get_reservaciones(db: Session = Depends(get_db)):
             "hora_inicio": r.hora_inicio.strftime("%H:%M"),
             "duracion": r.duracion,
             "nombre_contacto": r.nombre_contacto,
-            "telefono_contacto": r.telefono_contacto,
+            "telefono_area": r.telefono_area,
+            "telefono_numero": r.telefono_numero
         }
         for r in reservaciones
     ]
@@ -192,7 +195,8 @@ def get_reservacion(reservacion_id: int, db: Session = Depends(get_db)):
         "hora_inicio": reservacion.hora_inicio.strftime("%H:%M"),
         "duracion": reservacion.duracion,
         "nombre_contacto": reservacion.nombre_contacto,
-        "telefono_contacto": reservacion.telefono_contacto,
+        "telefono_area": reservacion.telefono_area,
+        "telefono_numero": reservacion.telefono_numero
     }
 
 # Endpoint para actualizar una reservación
@@ -241,7 +245,8 @@ def update_reservacion(reservacion_id: int, reservacion: ReservacionSchema, db: 
     db_reservacion.hora_inicio = hora_inicio_obj
     db_reservacion.duracion = reservacion.duracion
     db_reservacion.nombre_contacto = reservacion.nombre_contacto
-    db_reservacion.telefono_contacto = reservacion.telefono_contacto
+    db_reservacion.telefono_area=reservacion.telefono_area,
+    db_reservacion.telefono_numero=reservacion.telefono_numero
 
     db.commit()
     db.refresh(db_reservacion)
@@ -255,7 +260,8 @@ def update_reservacion(reservacion_id: int, reservacion: ReservacionSchema, db: 
         "hora_inicio": db_reservacion.hora_inicio.strftime("%H:%M"),
         "duracion": db_reservacion.duracion,
         "nombre_contacto": db_reservacion.nombre_contacto,
-        "telefono_contacto": db_reservacion.telefono_contacto,
+        "telefono_area": reservacion.telefono_area,
+        "telefono_numero": reservacion.telefono_numero
     }
 
 # Endpoint para eliminar una reservación
@@ -302,7 +308,8 @@ def get_reservas_por_cancha_y_fecha(
             "hora_inicio": r.hora_inicio.strftime("%H:%M"),
             "duracion": r.duracion,
             "nombre_contacto": r.nombre_contacto,
-            "telefono_contacto": r.telefono_contacto,
+            "telefono_area": r.telefono_area,
+            "telefono_numero": r.telefono_numero
         }
         for r in reservas
     ]

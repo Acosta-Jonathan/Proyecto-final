@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { reservacionesService } from '../services/reservacionesService';
-import { canchasService } from '../services/canchasService';
-import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { reservacionesService } from "../services/reservacionesService";
+import { canchasService } from "../services/canchasService";
+import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 
 function ModificarReservacion() {
-  const { reservaId } = useParams();  // Obtener el ID de la reserva desde la URL
+  const { reservaId } = useParams(); // Obtener el ID de la reserva desde la URL
   const [editandoReservacion, setEditandoReservacion] = useState(null);
   const [canchas, setCanchas] = useState([]);
   const [nuevaReservacion, setNuevaReservacion] = useState({
     cancha_id: 0,
-    fecha: '',
-    hora_inicio: '',
+    fecha: "",
+    hora_inicio: "",
     duracion: 0,
-    nombre_contacto: '',
-    telefono_contacto: ''
+    nombre_contacto: "",
+    telefono_area: "",
+    telefono_numero: "",
   });
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -38,7 +39,7 @@ function ModificarReservacion() {
   // Cargar la reserva por ID
   const cargarReservacionPorId = async (id) => {
     try {
-      const data = await reservacionesService.obtenerReservacionPorId(id);  // Obtener los datos de la reserva desde el backend
+      const data = await reservacionesService.obtenerReservacionPorId(id); // Obtener los datos de la reserva desde el backend
       console.log("Datos de la reserva:", data); // Depuración
       setEditandoReservacion(data);
       setNuevaReservacion({
@@ -47,7 +48,8 @@ function ModificarReservacion() {
         hora_inicio: data.hora_inicio,
         duracion: data.duracion,
         nombre_contacto: data.nombre_contacto,
-        telefono_contacto: data.telefono_contacto
+        telefono_area: data.telefono_area,
+        telefono_numero: data.telefono_numero,
       });
     } catch (error) {
       console.error("Error al cargar la reservación:", error);
@@ -58,16 +60,21 @@ function ModificarReservacion() {
     e.preventDefault();
     try {
       setError(""); // Limpiar error previo
-      await reservacionesService.modificarReservacion(reservaId, nuevaReservacion);
-      navigate('/');
+      await reservacionesService.modificarReservacion(
+        reservaId,
+        nuevaReservacion
+      );
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }
   };
 
-
   return (
-    <Container className="mt-5">
+    <Container
+      className=" blurred-container mt-5"
+      style={{ maxWidth: "600px" }}
+    >
       <Card>
         <Card.Header>
           <h2 className="text-center">Modificar Reservación</h2>
@@ -87,11 +94,18 @@ function ModificarReservacion() {
                   <Form.Control
                     as="select"
                     value={nuevaReservacion.cancha_id}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, cancha_id: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaReservacion({
+                        ...nuevaReservacion,
+                        cancha_id: e.target.value,
+                      })
+                    }
                     required
                   >
                     {canchas.map((cancha) => (
-                      <option key={cancha.id} value={cancha.id}>{cancha.nombre}</option>
+                      <option key={cancha.id} value={cancha.id}>
+                        {cancha.nombre}
+                      </option>
                     ))}
                   </Form.Control>
                 </Form.Group>
@@ -102,7 +116,12 @@ function ModificarReservacion() {
                   <Form.Control
                     type="date"
                     value={nuevaReservacion.fecha}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, fecha: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaReservacion({
+                        ...nuevaReservacion,
+                        fecha: e.target.value,
+                      })
+                    }
                     required
                   />
                 </Form.Group>
@@ -112,7 +131,12 @@ function ModificarReservacion() {
                   <Form.Control
                     type="time"
                     value={nuevaReservacion.hora_inicio}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, hora_inicio: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaReservacion({
+                        ...nuevaReservacion,
+                        hora_inicio: e.target.value,
+                      })
+                    }
                     required
                   />
                 </Form.Group>
@@ -122,7 +146,12 @@ function ModificarReservacion() {
                   <Form.Control
                     type="number"
                     value={nuevaReservacion.duracion}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, duracion: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setNuevaReservacion({
+                        ...nuevaReservacion,
+                        duracion: parseInt(e.target.value),
+                      })
+                    }
                     min="15"
                     max="120"
                     required
@@ -134,21 +163,50 @@ function ModificarReservacion() {
                   <Form.Control
                     type="text"
                     value={nuevaReservacion.nombre_contacto}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, nombre_contacto: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaReservacion({
+                        ...nuevaReservacion,
+                        nombre_contacto: e.target.value,
+                      })
+                    }
                     required
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
                   <Form.Label>Teléfono de Contacto</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={nuevaReservacion.telefono_contacto}
-                    onChange={(e) => setNuevaReservacion({ ...nuevaReservacion, telefono_contacto: e.target.value })}
-                    min="1000000000"
-                    max="9999999999999999"
-                    required
-                  />
+                  <div className="d-flex align-items-center">
+                    <Form.Control
+                      type="number"
+                      placeholder="Código de área"
+                      value={nuevaReservacion.telefono_area}
+                      onChange={(e) =>
+                        setNuevaReservacion({
+                          ...nuevaReservacion,
+                          telefono_area: e.target.value,
+                        })
+                      }
+                      min="100"
+                      max="9999"
+                      style={{ width: "120px" }}
+                      required
+                    />
+                    <span className="mx-2 fw-bold">-</span>
+                    <Form.Control
+                      type="number"
+                      placeholder="Número"
+                      value={nuevaReservacion.telefono_numero}
+                      onChange={(e) =>
+                        setNuevaReservacion({
+                          ...nuevaReservacion,
+                          telefono_numero: e.target.value,
+                        })
+                      }
+                      min="100000"
+                      max="99999999"
+                      required
+                    />
+                  </div>
                 </Form.Group>
 
                 <Button variant="primary" type="submit">
