@@ -13,6 +13,14 @@ export const canchasService = {
     }
   },
 
+  obtenerCanchaPorId: async (id) => {
+    const response = await fetch(`${API_URL}/canchas/${id}`);
+    if (!response.ok) {
+      throw new Error("No se pudo obtener la cancha");
+    }
+    return response.json();
+  },
+  
   async crearCancha(cancha) {
     try {
       const respuesta = await axios.post(`${API_URL}/canchas/`, cancha);

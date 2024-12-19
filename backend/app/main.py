@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func, or_
+from sqlalchemy import or_
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, SessionLocal, engine
 from app.models import Cancha, Reservacion
-from app.schemas.reservacion import ReservacionConId, ReservacionCreate as ReservacionSchema 
+from app.schemas.reservacion import ReservacionConId, ReservacionCreate as ReservacionSchema
 from app.schemas.cancha import CanchaConId, CanchaCreate as CanchaSchema
 
 Base.metadata.create_all(bind=engine)
@@ -41,13 +41,25 @@ def create_cancha(cancha: CanchaSchema, db: Session = Depends(get_db)):
     return db_cancha
 
 # Endpoint para obtener todas las reservas de la cancha seleccionada
-@app.get("/canchas/{cancha_id}/reservas", response_model=list[ReservacionSchema])
+@app.get("/canchas/{cancha_id}/reservas", response_model=list[ReservacionConId])
 def get_reservas_por_cancha(cancha_id: int, db: Session = Depends(get_db)):
     reservas = db.query(Reservacion).filter(
         Reservacion.cancha_id == cancha_id
     ).order_by(Reservacion.fecha, Reservacion.hora_inicio).all()
-
-    return reservas
+    # Convertir los campos de las reservas al formato esperado por el frontend
+    reservas_respuesta = [
+        {
+            "id": r.id,
+            "cancha_id": r.cancha_id,
+            "fecha": r.fecha.strftime("%Y-%m-%d"),  # Convertir fecha al formato "YYYY-MM-DD"
+            "hora_inicio": r.hora_inicio.strftime("%H:%M"),  # Convertir hora_inicio al formato "HH:MM"
+            "duracion": r.duracion,
+            "nombre_contacto": r.nombre_contacto,
+            "telefono_contacto": r.telefono_contacto,
+        }
+        for r in reservas
+    ]
+    return reservas_respuesta
 
 # Endpoint para obtener todas las canchas
 @app.get("/canchas/", response_model=list[CanchaConId])
@@ -168,10 +180,20 @@ def get_reservaciones(db: Session = Depends(get_db)):
 # Endpoint para obtener una reservación por ID
 @app.get("/reservaciones/{reservacion_id}", response_model=ReservacionSchema)
 def get_reservacion(reservacion_id: int, db: Session = Depends(get_db)):
-    db_reservacion = db.query(Reservacion).filter(Reservacion.id == reservacion_id).first()
-    if db_reservacion is None:
+    reservacion = db.query(Reservacion).filter(Reservacion.id == reservacion_id).first()
+    if not reservacion:
         raise HTTPException(status_code=404, detail="Reservación no encontrada")
-    return db_reservacion
+    
+    # Formatear la respuesta
+    return {
+        "id": reservacion.id,
+        "cancha_id": reservacion.cancha_id,
+        "fecha": reservacion.fecha.strftime("%Y-%m-%d"),
+        "hora_inicio": reservacion.hora_inicio.strftime("%H:%M"),
+        "duracion": reservacion.duracion,
+        "nombre_contacto": reservacion.nombre_contacto,
+        "telefono_contacto": reservacion.telefono_contacto,
+    }
 
 # Endpoint para actualizar una reservación
 @app.put("/reservaciones/{reservacion_id}", response_model=ReservacionConId)
@@ -214,19 +236,27 @@ def update_reservacion(reservacion_id: int, reservacion: ReservacionSchema, db: 
     
     
     
-    # Crear y guardar la reserva si no hay superposición
-    nueva_reserva = Reservacion(
-        cancha_id=reservacion.cancha_id,
-        fecha=fecha_obj,
-        hora_inicio=hora_inicio_obj,
-        duracion=reservacion.duracion,
-        nombre_contacto=reservacion.nombre_contacto,
-        telefono_contacto=reservacion.telefono_contacto,
-    )
-    db.add(nueva_reserva)
+    db_reservacion.cancha_id = reservacion.cancha_id
+    db_reservacion.fecha = fecha_obj
+    db_reservacion.hora_inicio = hora_inicio_obj
+    db_reservacion.duracion = reservacion.duracion
+    db_reservacion.nombre_contacto = reservacion.nombre_contacto
+    db_reservacion.telefono_contacto = reservacion.telefono_contacto
+
     db.commit()
-    db.refresh(nueva_reserva)
-    return nueva_reserva
+    db.refresh(db_reservacion)
+
+    
+    # Formatear la respuesta
+    return {
+        "id": db_reservacion.id,
+        "cancha_id": db_reservacion.cancha_id,
+        "fecha": db_reservacion.fecha.strftime("%Y-%m-%d"),
+        "hora_inicio": db_reservacion.hora_inicio.strftime("%H:%M"),
+        "duracion": db_reservacion.duracion,
+        "nombre_contacto": db_reservacion.nombre_contacto,
+        "telefono_contacto": db_reservacion.telefono_contacto,
+    }
 
 # Endpoint para eliminar una reservación
 @app.delete("/reservaciones/{id}")
@@ -237,3 +267,44 @@ def eliminar_reservacion(id: int, db: Session = Depends(get_db)):
     db.delete(reservacion)
     db.commit()
     return {"mensaje": "Reservación eliminada"}
+
+
+@app.get("/reservaciones/por_cancha_y_fecha/", response_model=list[ReservacionConId])
+def get_reservas_por_cancha_y_fecha(
+    cancha_id: int,
+    fecha: str = Query(..., regex="^\d{4}-\d{2}-\d{2}$"),  # Validación del formato de fecha
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene las reservas de una cancha específica para una fecha dada.
+    :param cancha_id: ID de la cancha
+    :param fecha: Fecha en formato "YYYY-MM-DD"
+    """
+    try:
+        fecha_obj = datetime.strptime(fecha, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de fecha inválido. Use YYYY-MM-DD.")
+
+    reservas = db.query(Reservacion).filter(
+        Reservacion.cancha_id == cancha_id,
+        Reservacion.fecha == fecha_obj
+    ).order_by(Reservacion.hora_inicio).all()
+
+    if not reservas:
+        raise HTTPException(status_code=404, detail="No se encontraron reservas para la fecha y cancha dadas.")
+
+    # Formatear la respuesta para el frontend
+    reservas_respuesta = [
+        {
+            "id": r.id,
+            "cancha_id": r.cancha_id,
+            "fecha": r.fecha.strftime("%Y-%m-%d"),
+            "hora_inicio": r.hora_inicio.strftime("%H:%M"),
+            "duracion": r.duracion,
+            "nombre_contacto": r.nombre_contacto,
+            "telefono_contacto": r.telefono_contacto,
+        }
+        for r in reservas
+    ]
+
+    return reservas_respuesta

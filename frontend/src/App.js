@@ -1,34 +1,27 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import CrearReservacion from './components/CrearReservacion';
+import ModificarReservacion from './components/ModificarReservacion';
 import Canchas from './components/Canchas';
-import Reservaciones from './components/Reservaciones';
+import './styles/App.css';
 
 function App() {
-
   return (
     <Router>
       <div>
-        <Routes>
-          {/* Ruta principal que muestra todas las canchas */}
-          <Route path="/" element={<Canchas />} />
-          
-          {/* Ruta para manejar las reservaciones de una cancha específica */}
-          <Route path="/reservaciones/:cancha_id" element={<Reservaciones />} />
-        </Routes>
+        <header className="fixed-header">
+          <h1>Reservas de cancha de Paddle</h1>
+        </header>
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<Canchas />} />
+            <Route path="/reservaciones/crear/:canchaId" element={<CrearReservacion />} />
+            <Route path="/reservaciones/modificar/:reservaId" element={<ModificarReservacion />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
-  // return (
-  //   <div className="App">
-  //     <header className="bg-primary text-white text-center py-5 animate__animated animate__fadeIn">
-  //       <h1>Reservas de cancha de Paddle</h1>
-  //       <p>Gestiona tus reservaciones</p>
-  //     </header>
-  //     <main>
-  //       <Reservaciones />
-  //     </main>
-  //   </div>
-  // );
 }
 
 export default App;
