@@ -141,10 +141,10 @@ function ModificarReservacion() {
                   />
                 </Form.Group>
 
-                <Form.Group className="mb-3">
+                <Form.Group controlId="duracion" className="mt-3">
                   <Form.Label>Duración (minutos)</Form.Label>
-                  <Form.Control
-                    type="number"
+                  <Form.Select
+                    name="duracion"
                     value={nuevaReservacion.duracion}
                     onChange={(e) =>
                       setNuevaReservacion({
@@ -152,10 +152,16 @@ function ModificarReservacion() {
                         duracion: parseInt(e.target.value),
                       })
                     }
-                    min="15"
-                    max="120"
                     required
-                  />
+                  >
+                    {Array.from({ length: 8 }, (_, i) => (i + 1) * 15).map(
+                      (minutos) => (
+                        <option key={minutos} value={minutos}>
+                          {minutos} minutos
+                        </option>
+                      )
+                    )}
+                  </Form.Select>
                 </Form.Group>
 
                 <Form.Group className="mb-3">

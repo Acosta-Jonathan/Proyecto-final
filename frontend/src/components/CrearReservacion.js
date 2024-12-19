@@ -33,9 +33,9 @@ function CrearReservacion() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setReserva(prev => ({
+    setReserva((prev) => ({
       ...prev,
-      [name]: name === 'duracion' ? parseInt(value) || 0 : value
+      [name]: name === "duracion" ? parseInt(value) || 0 : value,
     }));
   };
 
@@ -46,7 +46,7 @@ function CrearReservacion() {
       await reservacionesService.crearReservacion({
         ...reserva,
         cancha_id: parseInt(canchaId),
-        duracion: parseInt(reserva.duracion)
+        duracion: parseInt(reserva.duracion),
       });
       navigate("/");
     } catch (error) {
@@ -94,15 +94,20 @@ function CrearReservacion() {
 
             <Form.Group controlId="duracion" className="mt-3">
               <Form.Label>Duración (minutos)</Form.Label>
-              <Form.Control
-                type="number"
+              <Form.Select
                 name="duracion"
                 value={reserva.duracion}
                 onChange={handleChange}
-                min="15"
-                max="120"
                 required
-              />
+              >
+                {Array.from({ length: 8 }, (_, i) => (i + 1) * 15).map(
+                  (minutos) => (
+                    <option key={minutos} value={minutos}>
+                      {minutos} minutos
+                    </option>
+                  )
+                )}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group controlId="nombre_contacto" className="mt-3">
